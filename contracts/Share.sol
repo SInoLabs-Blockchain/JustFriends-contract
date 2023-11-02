@@ -1,8 +1,6 @@
-pragma solidity >=0.8.2 <0.9.0;
+pragma solidity 0.8.12;
 
-import "@openzeppelin/contracts/access/Owable.sol";
-
-// TODO: Events, final pricing model,
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract FriendtechSharesV1 is Ownable {
     address public protocolFeeDestination;

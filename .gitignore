@@ -8,4 +8,5 @@ typechain-types
 # Hardhat files
 cache
 artifacts
-
+# Except for the 'contracts' directory and its contents
+!artifacts/contracts/
