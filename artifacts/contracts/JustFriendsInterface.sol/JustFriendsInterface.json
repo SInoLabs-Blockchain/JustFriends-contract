@@ -1,0 +1,395 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "JustFriendsInterface",
+  "sourceName": "contracts/JustFriendsInterface.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "periodTimestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "DuplicateClaiming",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "walletAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "contentHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "DuplicateVoting",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "periodTimestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "EarlyClaiming",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "walletAddress",
+          "type": "address"
+        }
+      ],
+      "name": "ExistedCreator",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "FailedFeeTransfer",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "walletAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "contentHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "FreeContentExchange",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "periodTimestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "IllegalClaiming",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "walletAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "contentHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "InsufficientAccess",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "walletAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "contentHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "price",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "protocolFee",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "creatorFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "InsufficientPayment",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "contentHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "InvalidContent",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "walletAddress",
+          "type": "address"
+        }
+      ],
+      "name": "InvalidCreator",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "walletAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "contentHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalSupply",
+          "type": "uint256"
+        }
+      ],
+      "name": "InvalidFirstPurchase",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "walletAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "contentHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "InvalidLastSell",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "walletAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "contentHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "InvalidVoting",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "walletAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "contentHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "PaidContentVoting",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "hash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "totalPrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "AccessPurchased",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "hash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "seller",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "totalPrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "AccessSold",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "hash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "startedPrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "ContentCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "hash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "Downvoted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "hash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "Upvoted",
+      "type": "event"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
