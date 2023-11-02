@@ -7,6 +7,6 @@ typechain-types
 
 # Hardhat files
 cache
-artifacts
+artifacts/*
 # Except for the 'contracts' directory
 !artifacts/contracts/
