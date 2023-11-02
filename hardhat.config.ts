@@ -13,6 +13,15 @@ const config: HardhatUserConfig = {
       },
     ],
   },
+  networks: {
+    baobab: {
+      url: `https://public-en-baobab.klaytn.net`,
+      accounts: [
+        process.env.YOUR_PRIVATE_KEY ||
+          "edd189f5eebebb23d17a392e4bfaf2581fd13a40cc039037c2ec77555bbbfdb1",
+      ],
+    },
+  },
 };
 
 export default config;
