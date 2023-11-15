@@ -16,7 +16,7 @@ contract JustFriends is Ownable, JustFriendsInterface {
     uint8 upvoteWeight = 100;
     uint8 downvoteWeight = 80;
     uint8 voteWeight = 25;
-    uint32 oneMonth = 2592000;
+    uint32 periodBlock = 1000000;
 
     constructor(
         address _protocolFeeDestination,
@@ -102,11 +102,15 @@ contract JustFriends is Ownable, JustFriendsInterface {
         );
     }
 
-    function getContentInfo(
-        bytes32 _contentHash
-    ) external view returns (bytes32, uint256, address, uint256) {
-        Content memory content = contentList[_contentHash];
-        return (content.contentHash, content.accessTokenId, content.creator, content.totalSupply);
+    function getContentsInfo(
+        bytes32[] memory _contentHashes
+    ) external view returns (Content[] memory) {
+        Content[] memory result = new Content[](_contentHashes.length);
+        for (uint256 i = 0; i < _contentHashes.length; i++) {
+            Content memory content = contentList[_contentHashes[i]];
+            result[i] = content;
+        }
+        return result;
     }
 
     function getContentPrice(
@@ -152,15 +156,6 @@ contract JustFriends is Ownable, JustFriendsInterface {
         extraFeePercentBase = _newExtraFeePercentBase;
     }
 
-    function register() external {
-        if (creatorList[msg.sender].walletAddress != address(0)) {
-            revert ExistedCreator(msg.sender);
-        }
-
-        Creator memory newCreator = Creator(msg.sender, 0, 0, 0);
-        creatorList[msg.sender] = newCreator;
-    }
-
     function vote(
         bytes32 _contentHash,
         VoteType _voteType,
@@ -195,7 +190,7 @@ contract JustFriends is Ownable, JustFriendsInterface {
             _periodTimestamp
         ];
         if (!period.isClose) {
-            if (_periodTimestamp + oneMonth <= block.timestamp) {
+            if (_periodTimestamp + periodBlock <= block.timestamp) {
                 // Start a new period and add a new loyal fan record for user if the last period is expired
                 period.isClose = true;
                 Period storage newPeriod = periodList[creator.walletAddress][
@@ -224,11 +219,11 @@ contract JustFriends is Ownable, JustFriendsInterface {
         if (_voteType == VoteType.DOWNVOTE) {
             content.totalDownvote += 1;
             creator.totalDownvote += 1;
-            emit Downvoted(_contentHash, msg.sender);
+            emit Downvoted(_contentHash, msg.sender, content.creator);
         } else {
             content.totalUpvote += 1;
             creator.totalUpvote += 1;
-            emit Upvoted(_contentHash, msg.sender);
+            emit Upvoted(_contentHash, msg.sender, content.creator);
         }
         userReactions[msg.sender][_contentHash] = _voteType;
     }
@@ -240,7 +235,7 @@ contract JustFriends is Ownable, JustFriendsInterface {
         if (loyalFanRecord.claimed) {
             revert DuplicateClaiming(msg.sender, _creator, _periodTimestamp);
         }
-        if (block.timestamp < _periodTimestamp + oneMonth) {
+        if (block.timestamp < _periodTimestamp + periodBlock) {
             revert EarlyClaiming(msg.sender, _creator, _periodTimestamp);
         }
         Period memory period = periodList[_creator][_periodTimestamp];
@@ -262,7 +257,7 @@ contract JustFriends is Ownable, JustFriendsInterface {
 
     function postContent(bytes32 _contentHash, uint256 _startedPrice) external {
         if (creatorList[msg.sender].walletAddress == address(0)) {
-            revert InvalidCreator(msg.sender);
+            creatorList[msg.sender] = Creator(msg.sender, 0, 0, 0);
         }
 
         Content memory newContent = Content(

@@ -58,9 +58,9 @@ interface JustFriendsInterface {
         uint256 totalPrice
     );
 
-    event Upvoted(bytes32 indexed hash, address indexed account);
+    event Upvoted(bytes32 indexed hash, address indexed account, address indexed creator);
 
-    event Downvoted(bytes32 indexed hash, address indexed account);
+    event Downvoted(bytes32 indexed hash, address indexed account, address indexed creator);
 
     // ERRORS
     error InvalidContent(bytes32 contentHash);

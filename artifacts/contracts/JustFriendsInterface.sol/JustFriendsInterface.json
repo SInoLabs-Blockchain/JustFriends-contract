@@ -151,21 +151,6 @@
           "internalType": "uint256",
           "name": "amount",
           "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "price",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "protocolFee",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "creatorFee",
-          "type": "uint256"
         }
       ],
       "name": "InsufficientPayment",
@@ -204,11 +189,6 @@
           "internalType": "bytes32",
           "name": "contentHash",
           "type": "bytes32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "totalSupply",
-          "type": "uint256"
         }
       ],
       "name": "InvalidFirstPurchase",
@@ -363,6 +343,12 @@
           "internalType": "address",
           "name": "account",
           "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
         }
       ],
       "name": "Downvoted",
@@ -381,6 +367,12 @@
           "indexed": true,
           "internalType": "address",
           "name": "account",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "creator",
           "type": "address"
         }
       ],
