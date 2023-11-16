@@ -243,6 +243,27 @@
       "type": "error"
     },
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "periodTimestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "UnCloseClaiming",
+      "type": "error"
+    },
+    {
       "anonymous": false,
       "inputs": [
         {
@@ -324,6 +345,12 @@
           "internalType": "uint256",
           "name": "startedPrice",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "isPaid",
+          "type": "bool"
         }
       ],
       "name": "ContentCreated",

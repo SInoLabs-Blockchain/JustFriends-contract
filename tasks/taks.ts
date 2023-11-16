@@ -5,7 +5,7 @@ enum VoteType {
   UPVOTE = 1,
   DOWNVOTE = 2,
 }
-const JUST_FRIENDS_ADDRESS = "0x67b1b611BF9C04c246694DF1F9f543F3E7E67940";
+const JUST_FRIENDS_ADDRESS = "0x2B32fC9beaAfbfB0296403Cc2fa91aB2b16Daf87";
 // task("balance", "Prints an account's balance")
 //   .addParam("account", "The account's address")
 //   .setAction(async ({ account }) => {
@@ -14,7 +14,7 @@ const JUST_FRIENDS_ADDRESS = "0x67b1b611BF9C04c246694DF1F9f543F3E7E67940";
 //     console.log(ethers.formatEther(balance), "ETH");
 //   });
 
-task("postContent", "Posts content to the JustFriends platform")
+task("post", "Posts content to the JustFriends platform")
   .addParam("price", "The started price of the content (in ETH)")
   .setAction(async ({ price }, { ethers }) => {
     const [accountFirst, accountSecond, accountThird] = await ethers.getSigners();
@@ -23,7 +23,7 @@ task("postContent", "Posts content to the JustFriends platform")
     const randomBytes32 = ethers.hexlify(randomBytes);
     const justFriends: JustFriends = await ethers.getContractAt("JustFriends", JUST_FRIENDS_ADDRESS);
 
-    const tx = await justFriends.connect(accountFirst).postContent(randomBytes32, ethers.parseEther(price));
+    const tx = await justFriends.connect(accountFirst).postContent(randomBytes32, ethers.parseEther(price), true);
 
     const txResult = await tx.wait();
     console.log("🚀 ~ file: taks.ts:34 ~ .setAction ~ txResult:", txResult?.hash);
@@ -57,9 +57,9 @@ task("trade", "Purchases access to a content")
     const txBuy = await justFriends.connect(accountThird).buyContentAccess(hash, amount, { value: ethers.parseEther(price) });
     let txResult = await txBuy.wait();
     console.log("🚀 ~ tx buy hash: ", txResult?.hash);
-    const txSell = await justFriends.connect(accountSecond).sellContentAccess(hash, amount);
-    txResult = await txSell.wait();
-    console.log("🚀 ~ tx sell hash: ", txResult?.hash);
+    // const txSell = await justFriends.connect(accountSecond).sellContentAccess(hash, amount);
+    // txResult = await txSell.wait();
+    // console.log("🚀 ~ tx sell hash: ", txResult?.hash);
 
     console.log("Content access purchased successfully!");
   });

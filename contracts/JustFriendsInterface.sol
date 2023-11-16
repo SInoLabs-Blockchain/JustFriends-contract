@@ -13,6 +13,7 @@ interface JustFriendsInterface {
         bytes32 contentHash;
         uint256 accessTokenId;
         address creator;
+        bool isPaid;
         uint256 startedPrice;
         uint256 totalUpvote;
         uint256 totalDownvote;
@@ -20,7 +21,6 @@ interface JustFriendsInterface {
     }
 
     struct Creator {
-        address walletAddress;
         uint256 totalContent;
         uint256 totalUpvote;
         uint256 totalDownvote;
@@ -38,25 +38,11 @@ interface JustFriendsInterface {
     }
 
     // EVENTS
-    event ContentCreated(
-        bytes32 indexed hash,
-        address indexed creator,
-        uint256 startedPrice
-    );
+    event ContentCreated(bytes32 indexed hash, address indexed creator, uint256 startedPrice, bool isPaid);
 
-    event AccessPurchased(
-        bytes32 indexed hash,
-        address indexed buyer,
-        uint256 amount,
-        uint256 totalPrice
-    );
+    event AccessPurchased(bytes32 indexed hash, address indexed buyer, uint256 amount, uint256 totalPrice);
 
-    event AccessSold(
-        bytes32 indexed hash,
-        address indexed seller,
-        uint256 amount,
-        uint256 totalPrice
-    );
+    event AccessSold(bytes32 indexed hash, address indexed seller, uint256 amount, uint256 totalPrice);
 
     event Upvoted(bytes32 indexed hash, address indexed account, address indexed creator);
 
@@ -72,29 +58,14 @@ interface JustFriendsInterface {
     error InvalidVoting(address walletAddress, bytes32 contentHash);
     error DuplicateVoting(address walletAddress, bytes32 contentHash);
 
+    error UnCloseClaiming(address user, address creator, uint256 periodTimestamp);
     error EarlyClaiming(address user, address creator, uint256 periodTimestamp);
-    error DuplicateClaiming(
-        address user,
-        address creator,
-        uint256 periodTimestamp
-    );
-    error IllegalClaiming(
-        address user,
-        address creator,
-        uint256 periodTimestamp
-    );
+    error DuplicateClaiming(address user, address creator, uint256 periodTimestamp);
+    error IllegalClaiming(address user, address creator, uint256 periodTimestamp);
 
     error FreeContentExchange(address walletAddress, bytes32 contentHash);
-    error InsufficientPayment(
-        address walletAddress,
-        bytes32 contentHash,
-        uint256 amount
-    );
-    error InsufficientAccess(
-        address walletAddress,
-        bytes32 contentHash,
-        uint256 amount
-    );
+    error InsufficientPayment(address walletAddress, bytes32 contentHash, uint256 amount);
+    error InsufficientAccess(address walletAddress, bytes32 contentHash, uint256 amount);
     error InvalidFirstPurchase(address walletAddress, bytes32 contentHash);
     error InvalidLastSell(address walletAddress, bytes32 contentHash);
     error FailedFeeTransfer();
