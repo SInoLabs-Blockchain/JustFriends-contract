@@ -34,14 +34,13 @@ task("post", "Posts content to the JustFriends platform")
 
 task("vote", "Casts a vote on a content")
   .addParam("hash", "The content hash")
-  .addParam("period", "The timestamp of the period")
-  .setAction(async ({ hash, period }, { ethers }) => {
+  .setAction(async ({ hash }, { ethers }) => {
     const [accountFirst, accountSecond, accountThird] = await ethers.getSigners();
     const justFriends: JustFriends = await ethers.getContractAt("JustFriends", JUST_FRIENDS_ADDRESS);
-    const txUpvote = await justFriends.connect(accountSecond).vote(hash, 1, period);
+    const txUpvote = await justFriends.connect(accountSecond).vote(hash, 1);
     let txResult = await txUpvote.wait();
     console.log("🚀 ~ tx upvote hash: ", txResult?.hash);
-    const txDownvote = await justFriends.connect(accountThird).vote(hash, 2 as VoteType, period);
+    const txDownvote = await justFriends.connect(accountThird).vote(hash, 2 as VoteType);
     txResult = await txDownvote.wait();
     console.log("🚀 ~ tx upvote hash: ", txResult?.hash);
     console.log("Vote cast successfully!");
