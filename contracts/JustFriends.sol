@@ -19,26 +19,29 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
     uint8 downvoteWeight = 80;
     uint8 voteWeight = 25;
     uint32 periodBlock = 100000;
+    uint8 loyalFanLength = 3;
 
     constructor(
         address _protocolFeeDestination,
         uint8 _protocolFeePercentBase,
         uint8 _creatorFeePercentBase,
         uint8 _extraFeePercentBase,
-        uint8 _loyalFanFeePercentBase
+        uint8 _loyalFanFeePercentBase,
+        uint8 _loyalFanLength
     ) NonTransferableERC1155("") {
         protocolFeeDestination = _protocolFeeDestination;
         protocolFeePercentBase = _protocolFeePercentBase;
         creatorFeePercentBase = _creatorFeePercentBase;
         extraFeePercentBase = _extraFeePercentBase;
         loyalFanFeePercentBase = _loyalFanFeePercentBase;
+        loyalFanLength = _loyalFanLength;
     }
 
     mapping(bytes32 => Content) public contentList;
     mapping(address => Creator) public creatorList;
-    mapping(address => mapping(bytes32 => VoteType)) userReactions;
-    mapping(address => mapping(address => mapping(uint256 => LoyalFanRecord))) loyalFanRecords;
-    mapping(address => mapping(uint256 => Period)) periodList;
+    mapping(address => mapping(bytes32 => VoteType)) public userReactions;
+    mapping(address => mapping(address => mapping(uint256 => LoyalFanRecord))) public loyalFanRecords;
+    mapping(address => mapping(uint256 => Period)) public periodList;
 
     function _calculateCreditScore(uint256 totalUpvotes, uint256 totalDownvotes) private view returns (uint256) {
         return totalUpvotes * upvoteWeight - totalDownvotes * downvoteWeight;
@@ -69,24 +72,29 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
             period.loyalFans.push(_user);
             return;
         }
-        uint256 smallestLoyaltyFanIdInList = loyalFanCount + 1;
+        uint256 smallestLoyaltyFanIdInList = loyalFanCount;
         uint256 smallestLoyaltyPointInList = MAX_UINT256;
         for (uint256 i = 0; i < loyalFanCount; i++) {
             address fan = period.loyalFans[i];
             if (fan == _user) return;
             uint256 fanLoyalty = loyalFanRecords[fan][_creator][_periodId].loyalty;
-            if (fanLoyalty < smallestLoyaltyPointInList) {
+            if (fanLoyalty <= smallestLoyaltyPointInList) {
                 smallestLoyaltyPointInList = fanLoyalty;
                 smallestLoyaltyFanIdInList = i;
             }
         }
-        if (loyalFanCount < 20) {
+
+        if (loyalFanCount < loyalFanLength) {
             period.loyalFans.push(_user);
             return;
         }
-        if (loyalFanCount >= 20 && _loyalty > smallestLoyaltyPointInList) {
+        if (loyalFanCount >= loyalFanLength && _loyalty > smallestLoyaltyPointInList) {
             period.loyalFans[smallestLoyaltyFanIdInList] = _user;
         }
+    }
+
+    function getListLoyalty(address _creator, uint256 _periodId) public view returns (address[] memory) {
+        return periodList[_creator][_periodId].loyalFans;
     }
 
     function getCreatorInfo(address _walletAddress) external view returns (uint256, uint256, uint256) {
@@ -109,7 +117,15 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
             ? 0
             : ((_supply - 1 + _amount) * (_supply + _amount) * (2 * (_supply - 1 + _amount) + 1)) / 6;
         uint256 summation = sum2 - sum1;
-        return _basePrice + (summation / 10000);
+        return _basePrice + ((summation * 1 ether) / 100);
+    }
+
+    function getBuyPrice(bytes32 _contentHash, uint256 _amount) public view returns (uint256 buyPrice) {
+        Content memory content = contentList[_contentHash];
+        uint256 contentPrice = getContentPrice(content.startedPrice, content.totalSupply, _amount);
+        buyPrice =
+            (contentPrice * (creatorFeePercentBase + protocolFeePercentBase + loyalFanFeePercentBase + 100)) /
+            100;
     }
 
     function setProtocolFeeDestination(address _newProtocolFeeDestination) external onlyOwner {
@@ -156,11 +172,12 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
             revert DuplicateVoting(msg.sender, _contentHash);
         }
         uint256 periodId = block.number / periodBlock;
-        uint256 latestPeriodId = periodId - 1;
-        Period storage latestPeriod = periodList[content.creator][latestPeriodId];
-        // close lastest period if it wasn't closed
-        if (!latestPeriod.isClose) latestPeriod.isClose = true;
-
+        if (periodId > 0) {
+            uint256 latestPeriodId = periodId - 1;
+            Period storage latestPeriod = periodList[content.creator][latestPeriodId];
+            // close lastest period if it wasn't closed
+            if (!latestPeriod.isClose) latestPeriod.isClose = true;
+        }
         // calculate loyal score and update loyal list
         LoyalFanRecord storage currentLoyalFanRecord = loyalFanRecords[msg.sender][content.creator][periodId];
         currentLoyalFanRecord.loyalty++;
@@ -198,7 +215,7 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
 
         for (uint8 i = 0; i < period.loyalFans.length; i++) {
             if (period.loyalFans[i] == msg.sender) {
-                uint256 revenue = period.revenue / 20;
+                uint256 revenue = period.revenue / loyalFanLength;
                 (bool success, ) = msg.sender.call{value: revenue}("");
                 if (!success) {
                     revert FailedFeeTransfer();
@@ -213,8 +230,8 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
         if (contentList[_contentHash].totalSupply != 0) {
             revert InvalidContent(_contentHash);
         }
+        ++_contentCounter;
         contentList[_contentHash] = Content(_contentHash, _contentCounter, msg.sender, isPaid, _startedPrice, 0, 0, 1);
-        _contentCounter++;
         _mint(msg.sender, _contentCounter, 1, "");
 
         creatorList[msg.sender].totalContent++;
@@ -235,13 +252,15 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
         }
         // start update loyalty point
         uint256 periodId = block.number / periodBlock;
-        uint256 latestPeriodId = periodId - 1;
-        Period storage latestPeriod = periodList[msg.sender][latestPeriodId];
-        // close lastest period if it wasn't closed
-        if (!latestPeriod.isClose) latestPeriod.isClose = true;
+        if (periodId > 0) {
+            uint256 latestPeriodId = periodId - 1;
+            Period storage latestPeriod = periodList[content.creator][latestPeriodId];
+            // close lastest period if it wasn't closed
+            if (!latestPeriod.isClose) latestPeriod.isClose = true;
+        }
         // calculate loyal score and update loyal list
         LoyalFanRecord storage currentLoyalFanRecord = loyalFanRecords[msg.sender][content.creator][periodId];
-        currentLoyalFanRecord.loyalty = currentLoyalFanRecord.loyalty + 3;
+        currentLoyalFanRecord.loyalty = currentLoyalFanRecord.loyalty + 3 * _amount;
         _updateLoyalFansList(content.creator, msg.sender, periodId, currentLoyalFanRecord.loyalty);
 
         Creator memory creator = creatorList[content.creator];
@@ -252,7 +271,8 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
             creator.totalUpvote + creator.totalDownvote,
             contentPrice
         );
-        if (msg.value < contentPrice + creatorFee + protocolFee + loyalFee) {
+        uint256 totalPrice = contentPrice + creatorFee + protocolFee + loyalFee;
+        if (msg.value < totalPrice) {
             revert InsufficientPayment(msg.sender, _contentHash, msg.value);
         }
 
@@ -265,7 +285,7 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
         periodList[content.creator][periodId].revenue += loyalFee;
         _mint(msg.sender, content.accessTokenId, _amount, "");
 
-        emit AccessPurchased(_contentHash, msg.sender, _amount, contentPrice);
+        emit AccessPurchased(_contentHash, msg.sender, _amount, totalPrice);
     }
 
     function sellContentAccess(bytes32 _contentHash, uint256 _amount) external {
@@ -287,10 +307,12 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
         }
         // start update loyalty point
         uint256 periodId = block.number / periodBlock;
-        uint256 latestPeriodId = periodId - 1;
-        Period storage latestPeriod = periodList[msg.sender][latestPeriodId];
-        // close lastest period if it wasn't closed
-        if (!latestPeriod.isClose) latestPeriod.isClose = true;
+        if (periodId > 0) {
+            uint256 latestPeriodId = periodId - 1;
+            Period storage latestPeriod = periodList[content.creator][latestPeriodId];
+            // close lastest period if it wasn't closed
+            if (!latestPeriod.isClose) latestPeriod.isClose = true;
+        }
         Creator memory creator = creatorList[content.creator];
         uint256 contentPrice = getContentPrice(content.startedPrice, content.totalSupply - _amount, _amount);
         uint256 creatorCreditScore = _calculateCreditScore(creator.totalUpvote, creator.totalDownvote);
