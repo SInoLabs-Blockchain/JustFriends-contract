@@ -120,12 +120,38 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
         return _basePrice + ((summation * 1 ether) / 100);
     }
 
-    function getBuyPrice(bytes32 _contentHash, uint256 _amount) public view returns (uint256 buyPrice) {
-        Content memory content = contentList[_contentHash];
-        uint256 contentPrice = getContentPrice(content.startedPrice, content.totalSupply, _amount);
-        buyPrice =
-            (contentPrice * (creatorFeePercentBase + protocolFeePercentBase + loyalFanFeePercentBase + 100)) /
-            100;
+    function getBuyPrice(
+        bytes32[] memory _contentHashes,
+        uint256[] memory _amounts
+    ) public view returns (uint256[] memory) {
+        uint256[] memory results;
+        for (uint256 i = 0; i < _contentHashes.length; i++) {
+            Content memory content = contentList[_contentHashes[i]];
+            uint256 contentPrice = getContentPrice(content.startedPrice, content.totalSupply, _amounts[i]);
+            results[i] =
+                (contentPrice * (creatorFeePercentBase + protocolFeePercentBase + loyalFanFeePercentBase + 100)) /
+                100;
+        }
+        return results;
+    }
+
+    function getSellPrice(
+        bytes32[] memory _contentHashes,
+        uint256[] memory _amounts
+    ) public view returns (uint256[] memory) {
+        uint256[] memory results;
+        for (uint256 i = 0; i < _contentHashes.length; i++) {
+            Content memory content = contentList[_contentHashes[i]];
+            uint256 contentPrice = getContentPrice(
+                content.startedPrice,
+                content.totalSupply - _amounts[i],
+                _amounts[i]
+            );
+            results[i] =
+                (contentPrice * (creatorFeePercentBase + protocolFeePercentBase + loyalFanFeePercentBase + 100)) /
+                100;
+        }
+        return results;
     }
 
     function setProtocolFeeDestination(address _newProtocolFeeDestination) external onlyOwner {
@@ -149,7 +175,7 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
     }
 
     function vote(bytes32 _contentHash, VoteType _voteType) external {
-        Content memory content = contentList[_contentHash];
+        Content storage content = contentList[_contentHash];
         // User can only vote for free contents
         if (content.isPaid == true) {
             revert PaidContentVoting(msg.sender, _contentHash);
