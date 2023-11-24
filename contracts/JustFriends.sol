@@ -124,7 +124,7 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
         bytes32[] memory _contentHashes,
         uint256[] memory _amounts
     ) public view returns (uint256[] memory) {
-        uint256[] memory results;
+        uint256[] memory results = new uint256[](_contentHashes.length);
         for (uint256 i = 0; i < _contentHashes.length; i++) {
             Content memory content = contentList[_contentHashes[i]];
             uint256 contentPrice = getContentPrice(content.startedPrice, content.totalSupply, _amounts[i]);
@@ -139,7 +139,7 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
         bytes32[] memory _contentHashes,
         uint256[] memory _amounts
     ) public view returns (uint256[] memory) {
-        uint256[] memory results;
+        uint256[] memory results = new uint256[](_contentHashes.length);
         for (uint256 i = 0; i < _contentHashes.length; i++) {
             Content memory content = contentList[_contentHashes[i]];
             uint256 contentPrice = getContentPrice(
@@ -191,7 +191,7 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
             revert InvalidVoting(msg.sender, _contentHash);
         }
 
-        Creator memory creator = creatorList[content.creator];
+        Creator storage creator = creatorList[content.creator];
         VoteType previousReaction = userReactions[msg.sender][_contentHash];
         // User can only revote, cannot vote multiple times with the same value
         if (previousReaction != VoteType.NONE && previousReaction == _voteType) {
@@ -208,19 +208,27 @@ contract JustFriends is NonTransferableERC1155, JustFriendsInterface {
         LoyalFanRecord storage currentLoyalFanRecord = loyalFanRecords[msg.sender][content.creator][periodId];
         currentLoyalFanRecord.loyalty++;
         _updateLoyalFansList(content.creator, msg.sender, periodId, currentLoyalFanRecord.loyalty);
-        // marking the vote for this post
-        userReactions[msg.sender][_contentHash] = _voteType;
         // calculate total vote for this post
         // Update content upvote/downvote count
         if (_voteType == VoteType.DOWNVOTE) {
-            content.totalDownvote += 1;
-            creator.totalDownvote += 1;
+            if (previousReaction == VoteType.UPVOTE) {
+                content.totalUpvote--;
+                creator.totalUpvote--;
+            }
+            content.totalDownvote++;
+            creator.totalDownvote++;
             emit Downvoted(_contentHash, msg.sender, content.creator);
-        } else {
-            content.totalUpvote += 1;
-            creator.totalUpvote += 1;
+        } else if (_voteType == VoteType.UPVOTE) {
+            if (previousReaction == VoteType.DOWNVOTE) {
+                content.totalDownvote--;
+                creator.totalDownvote--;
+            }
+            content.totalUpvote++;
+            creator.totalUpvote++;
             emit Upvoted(_contentHash, msg.sender, content.creator);
         }
+        // marking the vote for this post
+        userReactions[msg.sender][_contentHash] = _voteType;
     }
 
     function claim(address _creator, uint256 _periodId) external {

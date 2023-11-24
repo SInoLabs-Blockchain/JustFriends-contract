@@ -87,7 +87,19 @@ describe("JustFriends", function () {
     });
     it("Should be able to re-vote", async function () {
       await justFriends.connect(user_1).vote(contentHash, 2);
+      let content = await justFriends.contentList(contentHash);
+      let creatorData = await justFriends.creatorList(creator.address);
+      expect(content.totalDownvote).to.be.equal(0);
+      expect(content.totalUpvote).to.be.equal(1);
+      expect(creatorData.totalDownvote).to.be.equal(0);
+      expect(creatorData.totalUpvote).to.be.equal(1);
       await justFriends.connect(user_1).vote(contentHash, 1);
+      content = await justFriends.contentList(contentHash);
+      creatorData = await justFriends.creatorList(creator.address);
+      expect(content.totalDownvote).to.be.equal(1);
+      expect(content.totalUpvote).to.be.equal(0);
+      expect(creatorData.totalDownvote).to.be.equal(1);
+      expect(creatorData.totalUpvote).to.be.equal(0);
     });
     it("Should fail to vote the same reaction in one post", async function () {
       await justFriends.connect(user_1).vote(contentHash, 2);
@@ -146,7 +158,7 @@ describe("JustFriends", function () {
     });
 
     it("Should succeed to buy post", async function () {
-      let buyPrice = await justFriends.getBuyPrice(contentHash, 1);
+      let buyPrice = (await justFriends.getBuyPrice([contentHash], [1]))[0];
       console.log("🚀 ~ file: Test.ts:147 ~ buyPrice:", ethers.formatEther(buyPrice));
       const buyTx = await justFriends.connect(user_1).buyContentAccess(contentHash, "1", { value: buyPrice });
       await expect(buyTx).to.be.emit(justFriends, "AccessPurchased").withArgs(contentHash, user_1.address, 1, buyPrice);
@@ -156,7 +168,7 @@ describe("JustFriends", function () {
       expect(loyaltyList[0]).to.be.equal(user_1.address);
       expect(await justFriends.balanceOf(user_1.address, contentId.toString())).to.be.equal(1);
 
-      buyPrice = await justFriends.getBuyPrice(contentHash, 10);
+      buyPrice = (await justFriends.getBuyPrice([contentHash], [10]))[0];
       console.log("🚀 ~ file: Test.ts:150 ~ buyPrice:", ethers.formatEther(buyPrice));
       const buyTx2 = await justFriends.connect(user_1).buyContentAccess(contentHash, "10", { value: buyPrice });
       await expect(buyTx2).to.be.emit(justFriends, "AccessPurchased").withArgs(contentHash, user_1.address, 10, buyPrice);
@@ -166,7 +178,7 @@ describe("JustFriends", function () {
       expect(loyaltyList[0]).to.be.equal(user_1.address);
       expect(await justFriends.balanceOf(user_1.address, contentId.toString())).to.be.equal(11);
 
-      buyPrice = await justFriends.getBuyPrice(contentHash, 1);
+      buyPrice = (await justFriends.getBuyPrice([contentHash], [1]))[0];
       console.log("🚀 ~ file: Test.ts:150 ~ buyPrice:", ethers.formatEther(buyPrice));
       const buyTx3 = await justFriends.connect(user_2).buyContentAccess(contentHash, "1", { value: buyPrice });
       await expect(buyTx3).to.be.emit(justFriends, "AccessPurchased").withArgs(contentHash, user_2.address, 1, buyPrice);
@@ -177,7 +189,7 @@ describe("JustFriends", function () {
       expect(loyaltyList[1]).to.be.equal(user_2.address);
       expect(await justFriends.balanceOf(user_2.address, contentId.toString())).to.be.equal(1);
 
-      buyPrice = await justFriends.getBuyPrice(contentHash, 100);
+      buyPrice = (await justFriends.getBuyPrice([contentHash], [100]))[0];
       console.log("🚀 ~ file: Test.ts:150 ~ buyPrice:", ethers.formatEther(buyPrice));
       const buyTx4 = await justFriends.connect(user_3).buyContentAccess(contentHash, "100", { value: buyPrice });
       await expect(buyTx4).to.be.emit(justFriends, "AccessPurchased").withArgs(contentHash, user_3.address, 100, buyPrice);
@@ -189,7 +201,7 @@ describe("JustFriends", function () {
       expect(loyaltyList[2]).to.be.equal(user_3.address);
       expect(await justFriends.balanceOf(user_3.address, contentId.toString())).to.be.equal(100);
 
-      buyPrice = await justFriends.getBuyPrice(contentHash, 1000);
+      buyPrice = (await justFriends.getBuyPrice([contentHash], [1000]))[0];
       console.log("🚀 ~ file: Test.ts:150 ~ buyPrice:", ethers.formatEther(buyPrice));
       const buyTx5 = await justFriends.connect(user_4).buyContentAccess(contentHash, "1000", { value: buyPrice });
       await expect(buyTx5).to.be.emit(justFriends, "AccessPurchased").withArgs(contentHash, user_4.address, 1000, buyPrice);
@@ -205,7 +217,7 @@ describe("JustFriends", function () {
 
       mine(periodBlock);
       const currentPeriodId = periodId + 1;
-      buyPrice = await justFriends.getBuyPrice(contentHash, 1);
+      buyPrice = (await justFriends.getBuyPrice([contentHash], [1]))[0];
       console.log("🚀 ~ file: Test.ts:150 ~ buyPrice:", ethers.formatEther(buyPrice));
       const buyTx6 = await justFriends.connect(user_4).buyContentAccess(contentHash, "1", { value: buyPrice });
       await expect(buyTx6).to.be.emit(justFriends, "AccessPurchased").withArgs(contentHash, user_4.address, 1, buyPrice);
@@ -218,7 +230,7 @@ describe("JustFriends", function () {
       expect(await justFriends.balanceOf(user_4.address, contentId.toString())).to.be.equal(1001);
     });
     it("Should succeed to sell vote", async function () {
-      let buyPrice = await justFriends.getBuyPrice(contentHash, 1);
+      let buyPrice = (await justFriends.getBuyPrice([contentHash], [1]))[0];
       const buyTx = await justFriends.connect(user_1).buyContentAccess(contentHash, "1", { value: buyPrice });
       const balanceBefore = await ethers.provider.getBalance(user_1.address);
       await expect(buyTx).to.be.emit(justFriends, "AccessPurchased").withArgs(contentHash, user_1.address, 1, buyPrice);
@@ -233,7 +245,7 @@ describe("JustFriends", function () {
       expect(balanceAfter).to.be.greaterThan(balanceBefore);
     });
     it("Should fail to sell vote if caller doesn't own it", async function () {
-      let buyPrice = await justFriends.getBuyPrice(contentHash, 1);
+      let buyPrice = (await justFriends.getBuyPrice([contentHash], [1]))[0];
       await justFriends.connect(user_1).buyContentAccess(contentHash, "1", { value: buyPrice });
       let sellTx = justFriends.connect(user_1).sellContentAccess(contentHash, 1);
       expect(sellTx).to.be.revertedWithCustomError(justFriends, "InsufficientAccess");
