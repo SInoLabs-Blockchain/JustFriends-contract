@@ -6,7 +6,7 @@ This repository contains the smart contract for the Just Friends project, a dece
 
 ## Contract Address
 
-- **Contract Address:** [0xddff4dDf057b125C04F770127972deAB378CED73](https://baobab.klaytnscope.com/account/0xddff4dDf057b125C04F770127972deAB378CED73)
+- **Contract Address:** [0x49b716E483FE96Dc089639AEEFa289C70554ce8d]
 
 ## Contract Details
 
